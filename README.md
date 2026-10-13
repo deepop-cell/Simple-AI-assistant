@@ -50,3 +50,7 @@ python simple_ai_assitant.py
 5. Then how do ChatGPT, Claude, remember our previous chats?
 6. Truth is Model doesn't remember anything, they send the entire conversation to the model every single time we make an API call (for context). (We don't see it but the model gets all the history of chats for the context).
 7. So how does the LLM knows which message corresponds to user and which is the reply of assistant ? ( for this we use the role thing , we also send the type role along with message). for us role is user and assitant's role is assistant so  it can distinguish.
+#Context Window
+1. Ai models cannot read unlimited texts at once.
+2. Every model has a maximum size of text it can look at in one call(This is called Context Window).This is measured in Tokens.
+3. So the issue is context length exceeds or silent cutting of older messages hence quality of response drops. It also becomes slower due to large text size, also more tokens are used so more cost.
