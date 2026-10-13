@@ -54,6 +54,7 @@ python simple_ai_assitant.py
 1. Ai models cannot read unlimited texts at once.
 2. Every model has a maximum size of text it can look at in one call(This is called Context Window).This is measured in Tokens.
 3. So the issue is context length exceeds or silent cutting of older messages hence quality of response drops. It also becomes slower due to large text size, also more tokens are used so more cost.
+
 #solution:(Some common ways to overcome this problem):-
 1. Use Sliding Window.
 2. Summarization of the context.
