@@ -16,7 +16,6 @@ Before you begin, ensure you have the following installed:
 ## Installation
 
 1. Clone the repository:
-git clone [https://github.com/YOUR-USERNAME/simple-ai-assistant.git](https://github.com/YOUR-USERNAME/simple-ai-assistant.git)
 cd simple-ai-assistant
 
 2. Set up a virtual environment:
