@@ -41,12 +41,11 @@ model="qwen3:4b"
 2. Start the AI assistant:
 python simple_ai_assitant.py
 3. Type your messages into the terminal. To end the conversation, type exit, quit, bye, or goodbye.
-# some issues :
-#LLM's are stateless:
-They dont have any memory .
-1.Every API call for the LLM is a brand new call for LLM.
-2.That new call is a new call and ends simultaneously.
-3.So LLM does not remeber our previous call.
-4.This is called Statelessness.
-5.Then how do chatgpt , claude , remembers our previous chats ?
-6.Truth is Model doesnt remember anything , they send the enitre conversation to the model every single time we make an API call(for context).(We dont see it but the model gets all the history of chats for the context).
+# LLMs are stateless: They don't have any memory.
+
+1. Every API call for the LLM is a brand new call for LLM.
+2. That new call is a new call and ends simultaneously.
+3. So LLM does not remember our previous call.
+4. This is called Statelessness.
+5. Then how do ChatGPT, Claude, remember our previous chats?
+6. Truth is Model doesn't remember anything, they send the entire conversation to the model every single time we make an API call (for context). (We don't see it but the model gets all the history of chats for the context).
