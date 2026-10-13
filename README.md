@@ -49,3 +49,4 @@ python simple_ai_assitant.py
 4. This is called Statelessness.
 5. Then how do ChatGPT, Claude, remember our previous chats?
 6. Truth is Model doesn't remember anything, they send the entire conversation to the model every single time we make an API call (for context). (We don't see it but the model gets all the history of chats for the context).
+7. So how does the LLM knows which message corresponds to user and which is the reply of assistant ? ( for this we use the role thing , we also send the type role along with message). for us role is user and assitant's role is assistant so  it can distinguish.
