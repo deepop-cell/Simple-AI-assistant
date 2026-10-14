@@ -60,6 +60,7 @@ python simple_ai_assitant.py
 3. Use compact (Present in claude code, only keeps key decision and answers etc to compact the history).
 4. RAG(External Storage (vector database) ).
 
-#The next task is: Giving a personality to AI or guiding AI how to behave
-1.If we want our model to respond like a say for example  be like a technical person or answer within 100 words.
-2.Note that this is done using role:"system" and we cant change it . 
+The next task is: Giving a personality to AI or guiding AI how to behave
+If we want our model to respond like a say for example be like a technical person or answer within 100 words.
+
+Note that this is done using role:"system" and we cant change it.
