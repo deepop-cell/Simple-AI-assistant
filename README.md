@@ -42,7 +42,8 @@ Instead of just chatting, this assistant acts as an **Agent**. It has access to 
 ### The Tool Execution Cycle
 When a user asks a complex question, the program follows this exact 5-step loop:
 
-![Tool Calling Loop Execution](image_e95c79.png)
+<img width="301" height="473" alt="image" src="https://github.com/user-attachments/assets/92a4f1d8-328f-4326-8d34-7da7ba567a7d" />
+
 
 1. **Tool Definitions + Messages:** The user asks a question (e.g., *"What's the weather in Paris?"*). The system sends this query along with a JSON list of available tools to the LLM.
 2. **Tool Calls:** The LLM realizes it needs external data and replies with a `tool_call` request (e.g., `get_weather("paris")`) instead of generating standard text.
