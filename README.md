@@ -46,10 +46,10 @@ When a user asks a complex question, the program follows this exact 5-step loop:
 
 
 1. **Tool Definitions + Messages:** The user asks a question (e.g., *"What's the weather in Paris?"*). The system sends this query along with a JSON list of available tools to the LLM.
-2. **Tool Calls:** The LLM realizes it needs external data and replies with a `tool_call` request (e.g., `get_weather("paris")`) instead of generating standard text.
+2. **Tool Calls:** The LLM realizes it needs external data and replies with a `tool_call` request (e.g., `get_weather("Kharagpur")`) instead of generating standard text.
 3. **Execute Function Code:** The Python script intercepts this request, maps it to the local function, and executes the actual Python code to get the result (e.g., `{"temperature": 14}`).
 4. **Results (Second Call):** The script appends the function's output to the message history and sends all prior messages + the new tool data back to the LLM.
-5. **Final Response:** The LLM reads the tool's output and formats it into a natural, human-readable response (e.g., *"It's currently 14°C in Paris."*).
+5. **Final Response:** The LLM reads the tool's output and formats it into a natural, human-readable response (e.g., *"It's currently 14°C in Kharagpur."*).
 
 ### Available Tools
 * **`get_current_time`**: Returns the live system date and time.
