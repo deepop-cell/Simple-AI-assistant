@@ -25,6 +25,11 @@ def calculate(num1,num2,operation):
     else:
         return "Error:Unknown Operation"
 
+def get_random_joke():
+    #*** Koi bhi random sa joke maar dega .
+    url="https://official-joke-api.appspot.com/random_joke"
+    response=requests.get(url,timeout=10)
+    return response.text
 #TOOLS= [{},{},{}...]
 TOOLS =[
     {
@@ -79,10 +84,22 @@ TOOLS =[
                 }
             }
         }
+    },{
+        "type":"function",
+        "function":{
+            "name":"get_random_joke",
+            "description":"Gives a random joke to tell to the user",
+            "parameters":{
+                "type":"object",
+                "properties":{}
+            }
+        }
     }
 ]
 FUNCTION_NAME_TO_FUNCTION={
     "get_current_time" : get_current_time,
     "get_city_weather" : get_city_weather,
-    "calculate" : calculate
+    "calculate" : calculate,
+    "get_random_joke" : get_random_joke
 }
+
