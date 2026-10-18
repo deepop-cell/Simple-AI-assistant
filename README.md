@@ -1,66 +1,63 @@
 # Simple AI Assistant
 
-A lightweight, terminal-based AI chat assistant built with Python. This project features an interactive chat loop to communicate with local AI models using the OpenAI API format and Ollama.
+A lightweight, terminal-based AI chat assistant built with Python. This project features an interactive chat loop to communicate with local AI models using the OpenAI API format and Ollama, and demonstrates advanced agentic behaviors like **Tool Calling**.
 
 ## Features
-* **Interactive Chat Loop:** Continuous terminal-based conversation until you decide to exit.
-* **Local LLM Integration:** Powered by Ollama, allowing you to run models locally without incurring cloud API costs.
-* **OpenAI API Standard:** Utilizes the official openai Python package, making it easily adaptable to cloud models if needed.
-* **Secure Configuration:** Uses environment variables to securely manage API keys and base URLs.
+- **Interactive Chat Loop:** Continuous terminal-based conversation until you decide to exit.
+- **Local LLM Integration:** Powered by Ollama, allowing you to run models locally without incurring cloud API costs.
+- **OpenAI API Standard:** Utilizes the official `openai` Python package, making it easily adaptable to cloud models if needed.
+- **Secure Configuration:** Uses environment variables to securely manage API keys and base URLs.
+- **Agentic Tool Calling:** The LLM can autonomously decide to run local Python functions (like checking the weather or calculating math) to answer complex queries.
 
 ## Prerequisites
 Before you begin, ensure you have the following installed:
-* Python 3.x
-* Ollama (with at least one model downloaded, e.g., ollama run qwen3:4b)
+- Python 3.x
+- Ollama (with at least one model downloaded, e.g., `ollama run qwen2.5:3b` or `llama3.2`)
 
-## Installation
+Core AI Concepts Implemented
+1. Handling Statelessness
+LLMs are naturally stateless—they don't have built-in memory. Every API call is a brand new request, and the model forgets the previous turn immediately.
 
-1. Clone the repository:
-cd simple-ai-assistant
+The Fix: To give the illusion of memory (like ChatGPT or Claude), we send the entire conversation history back to the model on every single API call.
 
-2. Set up a virtual environment:
-python -m venv .venv
+Role Management: We use "role": "user" and "role": "assistant" in our message history array so the LLM knows which messages it wrote and which ones the user wrote.
 
-3. Activate the virtual environment:
-- For Windows: .venv\Scripts\activate
-- For Mac/Linux: source .venv/bin/activate
+2. Managing the Context Window
+Models cannot read unlimited text at once. The maximum amount of text a model can process in one call is its Context Window, measured in tokens. If the conversation history gets too long, it causes API failures, slow responses, and higher costs.
 
-4. Install the required dependencies:
-pip install openai python-dotenv
+Solutions for scaling:
 
-5. Configure your environment variables:
-Create a file named .env in the root directory of the project and add the following configuration:
-base_url="[http://127.0.0.1:11434/v1](http://127.0.0.1:11434/v1)"
-api_key="ollama" 
-model="qwen3:4b" 
+Sliding Window: Dropping the oldest messages when a limit is reached.
 
-## Usage
+Summarization: Asking the LLM to summarize past context before it gets too long.
 
-1. Ensure Ollama is running in the background.
-2. Start the AI assistant:
-python simple_ai_assitant.py
-3. Type your messages into the terminal. To end the conversation, type exit, quit, bye, or goodbye.
-# LLMs are stateless: They don't have any memory.
+RAG (Retrieval-Augmented Generation): Storing history in a vector database and only pulling relevant past chats.
 
-1. Every API call for the LLM is a brand new call for LLM.
-2. That new call is a new call and ends simultaneously.
-3. So LLM does not remember our previous call.
-4. This is called Statelessness.
-5. Then how do ChatGPT, Claude, remember our previous chats?
-6. Truth is Model doesn't remember anything, they send the entire conversation to the model every single time we make an API call (for context). (We don't see it but the model gets all the history of chats for the context).
-7. So how does the LLM knows which message corresponds to user and which is the reply of assistant ? ( for this we use the role thing , we also send the type role along with message). for us role is user and assitant's role is assistant so  it can distinguish.
-#Context Window
-1. Ai models cannot read unlimited texts at once.
-2. Every model has a maximum size of text it can look at in one call(This is called Context Window).This is measured in Tokens.
-3. So the issue is context length exceeds or silent cutting of older messages hence quality of response drops. It also becomes slower due to large text size, also more tokens are used so more cost.
+3. System Prompts (Personality)
+To give the AI a specific personality or behavior rules (e.g., "Act like a technical expert" or "Always answer within 20 words"), we inject a message at the very beginning of the array with "role": "system". This fundamentally guides how the model generates all future responses.
 
-#solution:(Some common ways to overcome this problem):-
-1. Use Sliding Window.
-2. Summarization of the context.
-3. Use compact (Present in claude code, only keeps key decision and answers etc to compact the history).
-4. RAG(External Storage (vector database) ).
+Tool Calling Architecture
+Instead of just chatting, this assistant acts as an Agent. It has access to a toolkit of Python functions.
 
-The next task is: Giving a personality to AI or guiding AI how to behave
-If we want our model to respond like a say for example be like a technical person or answer within 100 words.
+The Tool Execution Cycle
+When a user asks a complex question, the program follows this exact 5-step loop:
 
-Note that this is done using role:"system" and we cant change it.
+Tool Definitions + Messages: The user asks a question (e.g., "What's the weather in Paris?"). The system sends this query along with a JSON list of available tools to the LLM.
+
+Tool Calls: The LLM realizes it needs external data and replies with a tool_call request (e.g., get_weather("paris")) instead of generating standard text.
+
+Execute Function Code: The Python script intercepts this request, maps it to the local function, and executes the actual Python code to get the result (e.g., {"temperature": 14}).
+
+Results (Second Call): The script appends the function's output to the message history and sends all prior messages + the new tool data back to the LLM.
+
+Final Response: The LLM reads the tool's output and formats it into a natural, human-readable response (e.g., "It's currently 14°C in Paris.").
+
+Available Tools
+get_current_time: Returns the live system date and time.
+
+get_city_weather(city): Hits the wttr.in API to fetch real-time weather data.
+
+calculate(num1, num2, operation): Safely performs exact math operations.
+
+Why give an LLM a Calculator?
+LLMs are probabilistic text engines, not calculators. They guess the next word based on patterns. For large numbers, they often "hallucinate" the wrong answer because they view numbers as text tokens rather than mathematical values.
