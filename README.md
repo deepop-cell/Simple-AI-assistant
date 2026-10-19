@@ -85,3 +85,21 @@ Instead of forcing an answer after one tool execution, I'll wrap the LLM call in
 2. **"I'm done"** -> It generates the final text response to the user and breaks the loop.
 
 This is the exact logic gap between a simple API wrapper and an autonomous agent, and it's what I'm currently implementing.
+**The Fix:** I wrapped the orchestration layer in an inner agent loop (a basic **ReAct** loop). Now, when a tool returns data, the code hands that context *back* to the LLM and lets it decide:
+1. **"I need more info"** -> It fires another tool in the chain (e.g., calls `get_city_weather("Kharagpur")`).
+2. **"I'm done"** -> It generates the final text response and breaks the loop.
+
+### Safety & Error Handling (Self-Healing)
+Running autonomous loops locally introduced some interesting engineering challenges that I had to solve:
+- **The Infinite Loop of Death:** If the AI hallucinates or gets confused, it can get stuck calling the same tool forever. I implemented a `MAX_STEPS` limit using a Python `for-else` block. If the AI hits 5 steps without answering, it forces a safe fallback message and breaks the loop to prevent crashes.
+- **Self-Healing Tool Crashes:** If a Python function fails (like an API timeout), it used to crash the whole app. Now, I wrap tool executions in `try-except` blocks. If a tool fails, the error is caught, converted to a string, and fed *back* to the LLM. The AI actually reads its own error and apologizes or tries another approach.
+
+---
+
+## Known Limitations & Future Scope
+
+Building this revealed some of the current fundamental limits of autonomous agents, especially on local hardware. Here is what I plan to tackle next:
+
+1. **The Loop Tax (Time & Tokens):** Every iteration of the ReAct loop forces the local model to re-read the entire chat history and all 7 JSON tool schemas. It's computationally heavy. *Future fix: Tool consolidation (e.g., combining IP fetching and weather checking into one single tool).*
+2. **Cascading Failures:** If Tool 1 returns a hallucinated or slightly wrong answer, Tool 2 will use that bad data, ruining the whole chain. *Future fix: Implementing self-correction system prompts ("If data looks suspicious, stop and ask the user for clarification before proceeding").*
+3. **Small Model Planning Struggles:** Lightweight local models (like 1B or 3B parameters) struggle to juggle 7+ tools and can sometimes call them in the wrong order. *Future fix: Forcing a "Plan-and-Solve" architecture where the model is required to output a `<thought>` block detailing its numbered plan before it is allowed to execute any tools.*
