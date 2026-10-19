@@ -1,5 +1,8 @@
 from datetime import datetime
 import requests
+import webbrowser
+import platform# this asks computer about its operating system(win or mac)
+import shutil# this asks 
 def get_current_time():
     return datetime.now().strftime("%Y-%m%d %H:%M:%S")
 
@@ -30,6 +33,29 @@ def get_random_joke():
     url="https://official-joke-api.appspot.com/random_joke"
     response=requests.get(url,timeout=10)
     return response.text
+
+def open_website(url):
+    #jo bhi website  bologe wo ye khol dega .
+    if not url.startswith("http"):
+        url = "https://" + url
+    try:# try is the error handling block , agar error a gya to unknowingly loop end nahi krna hai .
+        webbrowser.open(url)
+        return f"Successfully opened {url} in your browser"
+    except Exception as e:#catches the error in try block as e , and converts into string so LLM can tell what happened.
+        return f"Error: Could not open browser. {str(e)}"
+
+def get_system_info():
+    #computer ka os aur storage space bata deta hai . 
+    try: 
+        total,used,free = shutil.disk_usage("/")# shutil.disk usage total , used aur free ke form mai dega . we can accesss direclty in py unlike cpp
+        free_gb = round(free / (1024 ** 3), 2)
+        total_gb = round(total / (1024 ** 3), 2)
+
+        system_os = platform.system()# konsa hai win , mac etc etc 
+        os_version = platform.release()# number
+        return f"System:{system_os}, {os_version}, Free Storage:{free_gb}GB out of {total_gb}GB"
+    except Exception as e:
+        return f"Error getting system info: {str(e)}"# if catches any error 
 #TOOLS= [{},{},{}...]
 TOOLS =[
     {
@@ -94,12 +120,42 @@ TOOLS =[
                 "properties":{}
             }
         }
+    },
+    {
+        "type":"function",
+        "function":{
+            "name":"open_website",
+            "description":"opens the website of the url given by user",
+            "parameters":{
+                "type":"object",
+                "properties":{
+                    "url":{
+                        "type":"string",
+                        "description":"url of the website user want's to open"
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    },
+    {
+        "type":"function",
+        "function":{
+            "name":"get_system_info",
+            "description":"Gives the information about operating system and storage used and total storage of the users computer",
+            "parameters":{
+                "type":"object",
+                "properties":{}
+            }
+        }
     }
 ]
 FUNCTION_NAME_TO_FUNCTION={
     "get_current_time" : get_current_time,
     "get_city_weather" : get_city_weather,
     "calculate" : calculate,
-    "get_random_joke" : get_random_joke
+    "get_random_joke" : get_random_joke,
+    "open_website" : open_website,
+    "get_system_info" : get_system_info
 }
 
