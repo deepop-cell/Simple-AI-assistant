@@ -104,3 +104,18 @@ Building this revealed some of the current fundamental limits of autonomous agen
 2. **Cascading Failures:** If Tool 1 returns a hallucinated or slightly wrong answer, Tool 2 will use that bad data, ruining the whole chain. *Future fix: Implementing self-correction system prompts ("If data looks suspicious, stop and ask the user for clarification before proceeding").*
 3. **Small Model Planning Struggles:** Lightweight local models (like 1B or 3B parameters) struggle to juggle 7+ tools and can sometimes call them in the wrong order. *Future fix: Forcing a "Plan-and-Solve" architecture where the model is required to output a `<thought>` block detailing its numbered plan before it is allowed to execute any tools.*
 4. **Prompt Injection & Security Risks:** Because this agent has read/write access to my local system (e.g., opening browsers, reading system info), it is vulnerable to prompt injection. A malicious input could trick the LLM into ignoring its system prompt and executing unauthorized, destructive tools. *Future fix: Sandboxing the execution environment, implementing strict input sanitization, and adding an "approval-in-the-loop" step where the agent must ask for explicit Y/N permission before running any system-level commands.*
+
+---
+
+## Developer Tooling & Debug Mode
+
+When building autonomous loops, relying on basic `print()` statements quickly pollutes the terminal and makes it impossible to see what the agent is actually doing under the hood. To solve this, I implemented a custom logging system.
+
+### Environment-Based Debugging
+Instead of deleting `print` statements after testing, I introduced a `DEBUG` environment variable toggle in the `.env` file. 
+- **Production Mode (`DEBUG=False`):** The user sees a clean, simple chat interface.
+- **Developer Mode (`DEBUG=True`):** The terminal reveals the exact mechanical steps the code takes, including the raw JSON payloads being sent to and from the tools.
+
+### Terminal Styling (ANSI Escape Codes)
+To make the CLI visually distinct, I implemented terminal colorization from scratch without relying on heavy third-party libraries like `colorama`. 
+Using native **ANSI Escape Codes** (e.g., `\033[91m` for red), I separated the UI styling logic into a dedicated `Utilities/utilities.py` module. This ensures the main orchestration loop (`app.py`) and tool definitions (`tools.py`) remain strictly focused on logic, adhering to the principle of separation of concerns.
