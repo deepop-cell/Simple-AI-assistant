@@ -1,6 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
-from tools import TOOLS ,  FUNCTION_NAME_TO_FUNCTION
+from tools import TOOLS ,  FUNCTION_NAME_TO_FUNCTION,run_tools
+from Utilities.utilities import log 
 import os 
 import json
 load_dotenv()#by default looks for env file.
@@ -23,6 +24,7 @@ messages.append(
     "content":"Act like a very humble agent and always answer within 20 words."#telling LLM how to behave .
     }
 )
+#chat loop starts from here.
 while True:
     user_input=input("\nDeep:")
     #EXIT
@@ -36,7 +38,7 @@ while True:
         }
 
     )
-    # first call to LLM api to ask which tool we should use as per the user query,,
+   #chain tool calling . 
     for step in range(MAX_STEPS) : # llms tells us which tools and with what parameters we have to call.(Lopping in while for chain tool calling)
         response=client.chat.completions.create(#pass the whole history of messages for context + tools.
         model=os.getenv("model"),
@@ -49,22 +51,12 @@ while True:
         if not msg.tool_calls:# no tool required now (LLM ne bol dia ki ab aur koi tool nahi  chaiye )
             break
 
+        log(f"Step {step+1}:model requested {len(msg.tool_calls)} tool call(s)")
+
         messages.append(msg)#save the tool call
 
         for tool_call in msg.tool_calls :#looping over the tools 
-            func_name = tool_call.function.name
-            func_args={}
-            
-            print(f"Agent is running tool: {func_name}...") 
-            try:
-              func_args= json.loads(tool_call.function.arguments or "{}") # ye jo hai ye json format mai deta hai json.loads usse dixtcorinoary mai convert kr deta hai.
-              fn = FUNCTION_NAME_TO_FUNCTION[func_name]
-              result = fn(**func_args) ## operator func args ko dictironary se compatible arguements mai convert kr deta hai .
-            # originally fn args is in this form say city hai :->   "city":"KGP" this is dictionary form.
-            # but fn mai humein ciyt=kgp ke form mai dalna padega . **converts dictrionary into this compatable format.
-            except Exception as e:
-                result=f"Error while running {func_name} : {e}"
-
+            result=run_tools(tool_call)
 
             messages.append({# after we have called the functions as told by LLm , now we will send the result of fn calls againt to LLM so it can make it in a good presenatble way .
                 "role":"tool",
@@ -78,7 +70,6 @@ while True:
             {
                 "role":"assistant",
                 "content":fallback
-
             }
         )
         print("Assistant:" + fallback)
@@ -91,7 +82,7 @@ while True:
         }
     )
 
-    print("Assistant:"+msg.content)
+    print("Assistant:"+msg.content or "")# or means if msg.content is None then append empty string (Warna error aa jaega string + None nahi kr skte )
     #todays topic is role "system".
     #the extra prompt to give personality to the agent...
     #instruction to llm to how to behave..
