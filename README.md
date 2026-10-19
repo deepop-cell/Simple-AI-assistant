@@ -58,3 +58,30 @@ When a user asks a complex question, the program follows this exact 5-step loop:
 
 ### Why give an LLM a Calculator?
 LLMs are probabilistic text engines, not calculators. They guess the next word based on patterns. For large numbers, they often "hallucinate" the wrong answer because they view numbers as text tokens rather than mathematical values.
+
+Turning the AI into a Desktop Assistant
+
+Most basic AI scripts just hit public APIs and print text. I wanted to push this project further by giving the agent actual read/write access to my local machine, turning it into a proper desktop assistant. 
+
+Instead of relying on external web services, I added tools that use Python's built-in system libraries:
+
+* **Browser Automation (`open_website`):** The AI can now physically launch my OS's default web browser and navigate to URLs using the `webbrowser` module. If I type *"Open my GitHub profile"*, it parses the intent and opens the window for me.
+* **System Health Monitor (`get_system_info`):** Using the `shutil` and `platform` libraries, the agent can inspect my local hardware. It reads my root drive, calculates raw bytes into Gigabytes, and returns my OS version and free storage space.
+
+## Architecture Notes: Fixing the "One-Pass" Problem
+
+While building this, I realized the current architecture has a major flaw: it only does a single pass. 
+
+Right now, the execution flow is strictly linear: 
+User Prompt -> LLM picks a tool -> Python runs the tool -> LLM generates the final response. 
+
+But this completely breaks down for dependent, multi-step questions. For example, if I ask, *"What's the weather at my current location?"* The LLM correctly decides to call the `get_location` tool first. The backend returns "Kharagpur". But because the code is linear, the LLM is forced to reply immediately. It just says "You are in Kharagpur" and the chat loop resets. It never gets the chance to actually check the weather.
+
+### The Fix: Adding an Inner Agent Loop
+To solve this, my next step is upgrading the main script to use a chained tool-calling loop (a basic ReAct loop).
+
+Instead of forcing an answer after one tool execution, I'll wrap the LLM call in an inner `while` loop. Once a tool returns data, the code will hand that context *back* to the LLM and let it decide:
+1. **"I need more info"** -> It fires another tool (e.g., now that it knows I'm in Kharagpur, it calls `get_city_weather("Kharagpur")`).
+2. **"I'm done"** -> It generates the final text response to the user and breaks the loop.
+
+This is the exact logic gap between a simple API wrapper and an autonomous agent, and it's what I'm currently implementing in `app.py`.
