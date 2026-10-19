@@ -8,4 +8,4 @@ def log(text):
      # 90 - code for grey colour , 91- code  for red colour
      #m marks that the command has ended 
      # but we need to make sure that this colour effect is only for certain text 
-     # so jitne text ko colour krna hai usse baad ]033[0m add krdo . 0 means jo bhi commmand tha usse ab roke do 
+     # so jitne text ko colour krna hai usse baad \033[0m add krdo . 0 means jo bhi commmand tha usse ab roke do 
