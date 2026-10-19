@@ -3,12 +3,15 @@ import requests
 import webbrowser
 import platform# this asks computer about its operating system(win or mac)
 import shutil# this asks 
+from Utilities.utilities import log
+import json
 def get_current_time():
     return datetime.now().strftime("%Y-%m%d %H:%M:%S")
 
 def get_city_weather(city):
     url=f"https://wttr.in/{city}?format=3"
     resp=requests.get(url,timeout=10)
+    resp.raise_for_status()# This will raise HTTPError if something goes wrong with the req ( 4XX or 5XX means error ) 
     return resp.text
 # LLMs actual math calculate nahi karte, wo bas data ke basis par agla word guess (predict) karte hain.
 # Bade numbers me wo hallucinate (galat answer) kar dete hain kyunki unhe numbers ki mathematical value nahi pata hoti, wo bas unhe "tokens" (text chunks) ki tarah dekhte hain.
@@ -56,6 +59,13 @@ def get_system_info():
         return f"System:{system_os}, {os_version}, Free Storage:{free_gb}GB out of {total_gb}GB"
     except Exception as e:
         return f"Error getting system info: {str(e)}"# if catches any error 
+
+
+def get_current_location():
+    return "Kharagpur"
+
+
+
 #TOOLS= [{},{},{}...]
 TOOLS =[
     {
@@ -83,7 +93,8 @@ TOOLS =[
                         "description":"city to get the weather for."
                     }
                 }
-            }
+            },
+            "required" : ["city"]#this tells the model that this parameter is mandatory for the function call.
         }
     },
     {
@@ -108,7 +119,8 @@ TOOLS =[
                         "description":"the math operation required to perform for the query"
                     }
                 }
-            }
+            },
+            "required":["num1","num2","operation"]
         }
     },{
         "type":"function",
@@ -148,6 +160,17 @@ TOOLS =[
                 "properties":{}
             }
         }
+    },
+    {
+        "type":"function",
+        "function":{
+            "name":"get_current_location",
+            "description":"gives the user's current location. use this when the user asks for my location , my city or my area when not specified any city ",
+            "parameters":{
+                "type": "object",
+                "properties":{}
+            }
+        }
     }
 ]
 FUNCTION_NAME_TO_FUNCTION={
@@ -156,6 +179,24 @@ FUNCTION_NAME_TO_FUNCTION={
     "calculate" : calculate,
     "get_random_joke" : get_random_joke,
     "open_website" : open_website,
-    "get_system_info" : get_system_info
+    "get_system_info" : get_system_info,
+    "get_current_location" : get_current_location
 }
+def run_tools(tool_call):
+        func_name = tool_call.function.name
+        func_args={}
+        
+        print(f"Agent is running tool: {func_name}...") 
+        try:
+            func_args= json.loads(tool_call.function.arguments or "{}") # ye jo hai ye json format mai deta hai json.loads usse dixtcorinoary mai convert kr deta hai.
+            log(f" {func_name}({func_args})")
+            fn = FUNCTION_NAME_TO_FUNCTION[func_name]
+            result = fn(**func_args) ## operator func args ko dictironary se compatible arguements mai convert kr deta hai .
+        # originally fn args is in this form say city hai :->   "city":"KGP" this is dictionary form.
+        # but fn mai humein ciyt=kgp ke form mai dalna padega . **converts dictrionary into this compatable format.
+        except Exception as e:
+            result=f"Error while running {func_name} : {e}"
+
+        log(f"  ->>{result}")
+        return result
 
