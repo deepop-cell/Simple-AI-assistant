@@ -84,4 +84,4 @@ Instead of forcing an answer after one tool execution, I'll wrap the LLM call in
 1. **"I need more info"** -> It fires another tool (e.g., now that it knows I'm in Kharagpur, it calls `get_city_weather("Kharagpur")`).
 2. **"I'm done"** -> It generates the final text response to the user and breaks the loop.
 
-This is the exact logic gap between a simple API wrapper and an autonomous agent, and it's what I'm currently implementing in `app.py`.
+This is the exact logic gap between a simple API wrapper and an autonomous agent, and it's what I'm currently implementing.
