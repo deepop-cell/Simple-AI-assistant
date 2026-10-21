@@ -4,7 +4,29 @@ import webbrowser
 import platform# this asks computer about its operating system(win or mac)
 import shutil# this asks 
 from Utilities.utilities import log
+import time 
+import threading
 import json
+def set_timer(hours):
+    #see python works on only one thread (manlo worker )
+    #maanlo ek restraunt hai waha pe sirf ek hee cook hai 
+    # to ab agar uisko 60 min kaa kaam de doge to baaki ke kaam ruk jaenge 
+    #threading se hum us kaam ko ek alag fn maoi likhke ek new worker banate hai 
+    # new worker is created using threading.Thread() and iske andar target = assign krke isko kaam dete hai 
+    # so now ek new extra worker hai jo backrgound mai timer wala kaam kr rha hota hai .
+    def background_timer():#ye job description hai ki ye kaam lrna hai 
+        seconds = hours * 3600
+        time.sleep(seconds)
+         # Only the background thread sleeps(ye is fn background_timer ko rok ke rkhega )
+         #iske neeche ka part hours hour ke baad print hoga .
+        print(f"\n\033[92mAssistant:  Beeeeep! Your timer for {hours} hours is up!\033[0m")
+        print("\033[94mDeep:\033[0m ", end="", flush=True)
+
+    timer_thread = threading.Thread(target=background_timer)#threading.Thread creates a new bakcground worker so the code still runs instead of stopping for hour hours.
+    timer_thread.start()#target=background_timer this is way to assign the worker a task
+    #timer_thread.start() makes the worker start the task 
+    return f"Background timer successfully set for {hours} hours"
+
 def get_current_time():
     return datetime.now().strftime("%Y-%m%d %H:%M:%S")
 
@@ -171,16 +193,35 @@ TOOLS =[
                 "properties":{}
             }
         }
+    },
+    {
+        "type":"function",
+        "function":{
+            "name":"set_timer",
+            "description":"sets a timer in the background when the user asks ",
+            "parameters":{
+                "type":"object",
+                "properties":{
+                    "hours":{
+                        "type":"number",
+                        "description":"amount of hours the user says to put the timer for "
+                    }
+                },
+                "required":["hours"]
+            }
+        }
     }
 ]
-FUNCTION_NAME_TO_FUNCTION={
+FUNCTION_NAME_TO_FUNCTION={# this is basically a map of string(function name ) to  function.
     "get_current_time" : get_current_time,
     "get_city_weather" : get_city_weather,
     "calculate" : calculate,
     "get_random_joke" : get_random_joke,
     "open_website" : open_website,
     "get_system_info" : get_system_info,
-    "get_current_location" : get_current_location
+    "get_current_location" : get_current_location,
+    "set_timer" : set_timer
+
 }
 def run_tools(tool_call):
         func_name = tool_call.function.name
@@ -191,6 +232,8 @@ def run_tools(tool_call):
             func_args= json.loads(tool_call.function.arguments or "{}") # ye jo hai ye json format mai deta hai json.loads usse dixtcorinoary mai convert kr deta hai.
             log(f" {func_name}({func_args})")
             fn = FUNCTION_NAME_TO_FUNCTION[func_name]
+            #llm ne mujhe args is form ami diye hai eg "city" : "Kharagpur" (Ye dictionary wala form hai ).
+            #but to pass in a fucnction we need it in form  of city=Kharagpur . ** does this 
             result = fn(**func_args) ## operator func args ko dictironary se compatible arguements mai convert kr deta hai .
         # originally fn args is in this form say city hai :->   "city":"KGP" this is dictionary form.
         # but fn mai humein ciyt=kgp ke form mai dalna padega . **converts dictrionary into this compatable format.
@@ -199,4 +242,5 @@ def run_tools(tool_call):
 
         log(f"  ->>{result}")
         return result
+
 
