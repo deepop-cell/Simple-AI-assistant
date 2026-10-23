@@ -25,13 +25,12 @@ for chunks in stream:# stream gives us response as it is formed simulataneoulsy
         obj=calls.setdefault(tc.index , SimpleNamespace(id=None , function=SimpleNamespace(name="",arguments="")))
         #set ddef checks for the current tc.index in map if it is there then return its pair ( that is object here )
         # so for current tools index we get the object 
-      #if the current one is a new index then SimpleNamespace creates a new object for  us with given arguments/
         if tc.id:# id waise sirf first time aaati hai .
             obj.id=tc.id
         if tc.function and tc.function.name:# tc can have name of function and args in different pieces and in any order.
             obj.function.name +=tc.function.name
         if tc.function and  tc.function.arguments:
-            obj.function.argument +=tc.function.arguments
+            obj.function.arguments +=tc.function.arguments
 
     # if d.tool_calls:
     #     # note that even tho we are using stream but its qwen model oroperoty that it will send info one tool call together only.
