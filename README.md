@@ -119,3 +119,22 @@ Instead of deleting `print` statements after testing, I introduced a `DEBUG` env
 ### Terminal Styling (ANSI Escape Codes)
 To make the CLI visually distinct, I implemented terminal colorization from scratch without relying on heavy third-party libraries like `colorama`. 
 Using native **ANSI Escape Codes** (e.g., `\033[91m` for red), I separated the UI styling logic into a dedicated `Utilities/utilities.py` module. This ensures the main orchestration loop (`app.py`) and tool definitions (`tools.py`) remain strictly focused on logic, adhering to the principle of separation of concerns.
+# Streaming LLM Assistant with Tool Calling
+
+I was building a simple AI assistant and noticed the TTFT (Time To First Token) was way too high when waiting for the full JSON response to generate. To fix the lag, I rewrote the core to handle true streaming. 
+
+The tricky part was handling function/tool calls while streaming. When the model decides to use a tool (like fetching the weather for two different cities at once), it stops streaming text and starts streaming the tool arguments in interleaved chunks. This repo handles mapping those chunks by their index, reconstructing the JSON strings, executing the tools, and sending the results back to the model for the final streamed answer.
+
+## What it does
+- **Instant terminal output**: Uses `stream=True` and `flush=True` to print tokens exactly as they arrive.
+- **Parallel Tool Calling**: Safely parses the `delta.tool_calls` array, accumulates the fragmented arguments, and fires off multiple tools simultaneously.
+- **OpenAI API Compatible**: Works with the official OpenAI API, or local endpoints like Ollama/vLLM (tested with Qwen).
+
+## Setup
+
+1. Make sure you have the `openai` and `python-dotenv` packages installed.
+2. Create a `.env` file in the root directory:
+```text
+base_url=your_api_endpoint_here
+api_key=your_api_key_here
+MODEL=your_model_name
