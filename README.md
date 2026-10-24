@@ -138,3 +138,8 @@ The tricky part was handling function/tool calls while streaming. When the model
 base_url=your_api_endpoint_here
 api_key=your_api_key_here
 MODEL=your_model_name
+## Graceful Stream Interruption (Ctrl+C)
+
+If the model starts generating a massive wall of text or you realize you made a typo in your prompt, you don't want to kill the entire Python script just to stop it. 
+
+I added a `try-except KeyboardInterrupt` block around the streaming execution. Now, if you hit `Ctrl+C` while the assistant is streaming, it catches the interrupt, immediately stops printing tokens, clears any pending tool calls, and cleanly drops you right back into the chat loop so you can ask your next question. No ugly Python traceback errors, just a clean exit back to the input prompt.
