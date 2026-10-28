@@ -1,4 +1,4 @@
-# Simple AI Assistant
+<img width="841" height="329" alt="image" src="https://github.com/user-attachments/assets/868380ca-7892-494b-b496-cfa2d90c62d3" /># Simple AI Assistant
 
 A lightweight, terminal-based AI chat assistant built with Python. This project features an interactive chat loop to communicate with local AI models using the OpenAI API format and Ollama, and demonstrates advanced agentic behaviors like **Tool Calling**.
 
@@ -143,6 +143,12 @@ MODEL=your_model_name
 If the model starts generating a massive wall of text or you realize you made a typo in your prompt, you don't want to kill the entire Python script just to stop it. 
 
 I added a `try-except KeyboardInterrupt` block around the streaming execution. Now, if you hit `Ctrl+C` while the assistant is streaming, it catches the interrupt, immediately stops printing tokens, clears any pending tool calls, and cleanly drops you right back into the chat loop so you can ask your next question. No ugly Python traceback errors, just a clean exit back to the input prompt.
+```
+### Vector Embeddings & Semantic Search (RAG)
+* **Tokenization & Vector Mapping:** Breaks down input text into tokens and maps each token ID to a high-dimensional dense vector that captures its deep semantic meaning.
+* **Mathematical Similarity Matching:** Calculates the semantic relationship between the user's query and stored knowledge by computing the dot product (or cosine similarity) between their respective vectors.
+* **Retrieval-Augmented Generation (RAG):** Uses this vector math to perform lightning-fast context retrieval, fetching the most highly correlated documents from a vector database (e.g., PostgreSQL with `pgvector`) and injecting them directly into the LLM's prompt.
+
 
 
 
