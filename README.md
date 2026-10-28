@@ -148,6 +148,7 @@ I added a `try-except KeyboardInterrupt` block around the streaming execution. N
 * **Tokenization & Vector Mapping:** Breaks down input text into tokens and maps each token ID to a high-dimensional dense vector that captures its deep semantic meaning.
 * **Mathematical Similarity Matching:** Calculates the semantic relationship between the user's query and stored knowledge by computing the dot product (or cosine similarity) between their respective vectors.
 * **Retrieval-Augmented Generation (RAG):** Uses this vector math to perform lightning-fast context retrieval, fetching the most highly correlated documents from a vector database (e.g., PostgreSQL with `pgvector`) and injecting them directly into the LLM's prompt.
+*  Basically whenever a query is generated , we find the most similar vector db (by dot product ) of that query , this thing is called semantic search(it searches for similar things not exact literal words) .
 
 
 
