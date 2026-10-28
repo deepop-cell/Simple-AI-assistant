@@ -1,4 +1,4 @@
-<img width="841" height="329" alt="image" src="https://github.com/user-attachments/assets/868380ca-7892-494b-b496-cfa2d90c62d3" /># Simple AI Assistant
+
 
 A lightweight, terminal-based AI chat assistant built with Python. This project features an interactive chat loop to communicate with local AI models using the OpenAI API format and Ollama, and demonstrates advanced agentic behaviors like **Tool Calling**.
 
